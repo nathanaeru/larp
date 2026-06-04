@@ -213,6 +213,14 @@ namespace Larp
             return Color.FromArgb(203, 166, 247); 
         }
 
+        private Color Blend(Color front, Color back, double amount)
+        {
+            byte r = (byte)((front.R * amount) + back.R * (1 - amount));
+            byte g = (byte)((front.G * amount) + back.G * (1 - amount));
+            byte b = (byte)((front.B * amount) + back.B * (1 - amount));
+            return Color.FromArgb(255, r, g, b);
+        }
+
         private void InitializeComponent()
         {
             this.FormBorderStyle = FormBorderStyle.None;
@@ -307,10 +315,10 @@ namespace Larp
         {
             bool isDark = IsSystemDarkTheme();
             
-            Color baseBg = isDark ? Color.FromArgb(30, 30, 46) : Color.FromArgb(239, 241, 245);
-            Color surface0 = isDark ? Color.FromArgb(49, 50, 68) : Color.FromArgb(204, 208, 218);
-            Color textMain = isDark ? Color.FromArgb(205, 214, 244) : Color.FromArgb(76, 79, 105);
-            Color subText = isDark ? Color.FromArgb(166, 173, 200) : Color.FromArgb(108, 111, 133);
+            Color baseBg = isDark ? Blend(SystemAccent, Color.Black, 0.12) : Blend(SystemAccent, Color.White, 0.05);
+            Color surface0 = isDark ? Blend(SystemAccent, Color.Black, 0.20) : Blend(SystemAccent, Color.White, 0.15);
+            Color textMain = isDark ? Color.White : Color.FromArgb(40, 40, 40);
+            Color subText = isDark ? Blend(SystemAccent, Color.Gray, 0.3) : Blend(SystemAccent, Color.DimGray, 0.3);
 
             this.BackColor = baseBg;
             this.ForeColor = textMain;
@@ -353,8 +361,8 @@ namespace Larp
             powerBtn.Invalidate(); 
 
             bool isDark = IsSystemDarkTheme();
-            Color textMain = isDark ? Color.FromArgb(205, 214, 244) : Color.FromArgb(76, 79, 105);
-            Color subText = isDark ? Color.FromArgb(166, 173, 200) : Color.FromArgb(108, 111, 133);
+            Color textMain = isDark ? Color.White : Color.FromArgb(40, 40, 40);
+            Color subText = isDark ? Blend(SystemAccent, Color.Gray, 0.3) : Blend(SystemAccent, Color.DimGray, 0.3);
 
             if (IsDnsOn)
             {

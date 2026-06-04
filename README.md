@@ -17,5 +17,5 @@ I used Cloudflare WARP a lot, but I noticed that the app is too bloated for such
 ## How to Build
 
 ```powershell
-& C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /out:larp.exe larp.cs
+& C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /out:build/larp.exe larp.cs
 ```
