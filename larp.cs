@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.NetworkInformation;
 using Microsoft.Win32;
+using System.Reflection;
 
 namespace Larp
 {
@@ -14,9 +15,16 @@ namespace Larp
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TrayApp());
+            try 
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new TrayApp());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Crash Details:\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 
@@ -56,25 +64,35 @@ namespace Larp
 
         public void UpdateTrayIcon(bool isOn, Color accent)
         {
-            Bitmap bmp = new Bitmap(16, 16);
-            using (Graphics g = Graphics.FromImage(bmp))
+            Image img = AppWindow.LoadEmbeddedImage(isOn ? "CONNECT.png" : "DISCONNECT.png");
+            
+            if (img != null)
             {
-                g.Clear(Color.Transparent);
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                if (isOn)
+                using (Bitmap bmp = new Bitmap(img))
                 {
-                    using (SolidBrush b = new SolidBrush(accent))
-                        g.FillEllipse(b, 2, 2, 12, 12);
-                }
-                else
-                {
-                    using (Pen p = new Pen(Color.FromArgb(166, 173, 200), 2))
-                        g.DrawEllipse(p, 3, 3, 10, 10);
+                    if (trayIcon.Icon != null) trayIcon.Icon.Dispose();
+                    trayIcon.Icon = Icon.FromHandle(bmp.GetHicon());
                 }
             }
-            if (trayIcon != null) 
+            else
             {
+                Bitmap bmp = new Bitmap(16, 16);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.Clear(Color.Transparent);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                    if (isOn)
+                    {
+                        using (SolidBrush b = new SolidBrush(accent))
+                            g.FillEllipse(b, 2, 2, 12, 12);
+                    }
+                    else
+                    {
+                        using (Pen p = new Pen(Color.FromArgb(166, 173, 200), 2))
+                            g.DrawEllipse(p, 3, 3, 10, 10);
+                    }
+                }
                 if (trayIcon.Icon != null) trayIcon.Icon.Dispose();
                 trayIcon.Icon = Icon.FromHandle(bmp.GetHicon());
             }
@@ -141,7 +159,8 @@ namespace Larp
         private string currentProvider = "Cloudflare";
         private string customDns = "9.9.9.9,149.112.112.112";
         private readonly string SettingsFile = Path.Combine(Application.StartupPath, "LarpSettings.txt");
-        private Label titleLabel;
+        
+        private PictureBox headerImage;
         private Label statusLabel;
         private Label subStatusLabel;
         private PowerButton powerBtn;
@@ -163,6 +182,25 @@ namespace Larp
             UpdateUIState(); 
             
             SystemEvents.UserPreferenceChanged += new UserPreferenceChangedEventHandler(SystemEvents_UserPreferenceChanged);
+        }
+
+        public static Image LoadEmbeddedImage(string imageName)
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                
+                // Tries the exact filename first, then falls back to the namespace prefix
+                var stream = assembly.GetManifestResourceStream(imageName);
+                if (stream == null) stream = assembly.GetManifestResourceStream("Larp." + imageName);
+                
+                if (stream != null) 
+                {
+                    return Image.FromStream(stream);
+                }
+            }
+            catch { }
+            return null;
         }
 
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -226,23 +264,31 @@ namespace Larp
             this.FormBorderStyle = FormBorderStyle.None;
             this.Font = new Font("Segoe UI", 9.5f);
             this.Width = 320;
-            this.Height = 475; 
+            this.Height = 525; 
             this.ShowInTaskbar = false;
             this.StartPosition = FormStartPosition.Manual;
             this.Deactivate += new EventHandler((s, e) => this.Hide());
             this.Paint += new PaintEventHandler(DrawBorder);
 
-            titleLabel = new Label();
-            titleLabel.Text = "LARP DNS Switcher";
-            titleLabel.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
-            titleLabel.AutoSize = false;
-            titleLabel.Width = this.Width;
-            titleLabel.TextAlign = ContentAlignment.MiddleCenter;
-            titleLabel.Location = new Point(0, 15);
-            this.Controls.Add(titleLabel);
+            // Apply App Icon
+            Image appIconImg = LoadEmbeddedImage("ICON.png");
+            if (appIconImg != null)
+            {
+                using (Bitmap bmp = new Bitmap(appIconImg))
+                {
+                    this.Icon = Icon.FromHandle(bmp.GetHicon());
+                }
+            }
+
+            headerImage = new PictureBox();
+            headerImage.Width = this.Width;
+            headerImage.Height = 75;
+            headerImage.Location = new Point(0, 20);
+            headerImage.SizeMode = PictureBoxSizeMode.Zoom;
+            this.Controls.Add(headerImage);
 
             powerBtn = new PowerButton();
-            powerBtn.Location = new Point((this.Width - powerBtn.Width) / 2, 60);
+            powerBtn.Location = new Point((this.Width - powerBtn.Width) / 2, 110);
             powerBtn.Click += new EventHandler(PowerBtn_Click);
             this.Controls.Add(powerBtn);
 
@@ -252,7 +298,7 @@ namespace Larp
             statusLabel.Height = 40; 
             statusLabel.TextAlign = ContentAlignment.MiddleCenter;
             statusLabel.Font = new Font("Segoe UI", 16f, FontStyle.Regular);
-            statusLabel.Location = new Point(0, 200);
+            statusLabel.Location = new Point(0, 250);
             this.Controls.Add(statusLabel);
 
             subStatusLabel = new Label();
@@ -261,13 +307,13 @@ namespace Larp
             subStatusLabel.Height = 25; 
             subStatusLabel.TextAlign = ContentAlignment.MiddleCenter;
             subStatusLabel.Font = new Font("Segoe UI", 9.5f);
-            subStatusLabel.Location = new Point(0, 238);
+            subStatusLabel.Location = new Point(0, 290);
             this.Controls.Add(subStatusLabel);
 
             settingsPanel = new Panel();
             settingsPanel.Width = 280;
             settingsPanel.Height = 120;
-            settingsPanel.Location = new Point(20, 280);
+            settingsPanel.Location = new Point(20, 330);
             this.Controls.Add(settingsPanel);
 
             providerDropdown = new ComboBox();
@@ -305,7 +351,7 @@ namespace Larp
             exitBtn.FlatStyle = FlatStyle.Flat;
             exitBtn.FlatAppearance.BorderSize = 0;
             exitBtn.Size = new Size(280, 38);
-            exitBtn.Location = new Point(20, 415);
+            exitBtn.Location = new Point(20, 465);
             exitBtn.Cursor = Cursors.Hand;
             exitBtn.Click += new EventHandler((s, e) => parentApp.ExitApp());
             this.Controls.Add(exitBtn);
@@ -324,7 +370,12 @@ namespace Larp
             this.ForeColor = textMain;
             currentBorderColor = surface0;
 
-            titleLabel.ForeColor = subText;
+            Image newHeader = LoadEmbeddedImage(isDark ? "LIGHT.png" : "DARK.png");
+            if (newHeader != null)
+            {
+                if (headerImage.Image != null) headerImage.Image.Dispose();
+                headerImage.Image = newHeader;
+            }
             
             settingsPanel.BackColor = surface0;
             providerDropdown.BackColor = baseBg;

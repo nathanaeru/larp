@@ -1,5 +1,7 @@
 # LARP - A Simple DNS Switcher for Windows
 
+![App logo](LIGHT.png)
+
 LARP (a pun on Cloudflare WARP) is a simple DNS switcher for Windows that allows you to easily switch between different DNS configurations. It sits snugly on the system tray, with a simple indicator and lightweight UI made in native .NET Framework that is built-in on modern Windows.
 
 ## Why I made this
@@ -17,5 +19,5 @@ I used Cloudflare WARP a lot, but I noticed that the app is too bloated for such
 ## How to Build
 
 ```powershell
-& C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /out:build/larp.exe larp.cs
+& C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /win32icon:ICON.ico /out:build/larp.exe /resource:CONNECT.png /resource:DISCONNECT.png /resource:LIGHT.png /resource:DARK.png larp.cs
 ```
