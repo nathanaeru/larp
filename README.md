@@ -10,14 +10,20 @@ I used Cloudflare WARP a lot, but I noticed that the app is too bloated for such
 
 ## Features
 
-- Simple, beautiful and modern UI inspired by Catppuccin theme.
+- Simple, beautiful and modern UI.
 - Supports Cloudflare `1.1.1.1` and Google `8.8.8.8` DNS providers, and also custom user-provided ones.
 - Light and dark theme that syncs with OS theme.
 - Can be set to open in startup
-- Extremely lightweight and feels native.
+- Extremely lightweight.
 
 ## How to Build
+
+Requirements: .NET Framework v4.0.30319 (built-in in Windows 10 or later).
 
 ```powershell
 & C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /win32icon:ICON.ico /out:build/larp.exe /resource:CONNECT.png /resource:DISCONNECT.png /resource:LIGHT.png /resource:DARK.png larp.cs
 ```
+
+## How to Install
+
+Download the latest setup file from the [Releases](https://github.com/nathanaeru/larp/releases/tag/Release) page, then install it.
