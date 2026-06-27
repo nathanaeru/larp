@@ -1,0 +1,39 @@
+name: Build and Release LARP
+
+on:
+  push:
+    branches:
+      - main  # Change this to 'master' if your main branch is called master
+
+# Grant permission to create a release and upload assets
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Build Directory
+        run: mkdir build
+
+      - name: Compile LARP Executable
+        run: |
+          & "C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe" /target:winexe /win32icon:ICON.ico /out:build\larp.exe /resource:CONNECT.png /resource:DISCONNECT.png /resource:LIGHT.png /resource:DARK.png /resource:ICON.png larp.cs
+
+      - name: Compile Inno Setup Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: LARP DNS Switcher v1.0.${{ github.run_number }}
+          body: "Automated build triggered by a push to the main branch."
+          files: build/LARP_Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

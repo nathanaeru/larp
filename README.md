@@ -24,6 +24,11 @@ Requirements: .NET Framework v4.0.30319 (built-in in Windows 10 or later).
 & C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /target:winexe /win32icon:ICON.ico /out:build/larp.exe /resource:CONNECT.png /resource:DISCONNECT.png /resource:LIGHT.png /resource:DARK.png larp.cs
 ```
 
+To build the installer, you need to have Inno Setup 6 installed, then run this:
+```powershell
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+```
+
 ## How to Install
 
-Download the latest setup file from the [Releases](https://github.com/nathanaeru/larp/releases/tag/Release) page, then install it.
+Download the latest setup file from the [Releases](https://github.com/nathanaeru/larp/releases) page, then install it.

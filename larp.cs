@@ -7,14 +7,27 @@ using System.IO;
 using System.Net.NetworkInformation;
 using Microsoft.Win32;
 using System.Reflection;
+using System.Threading;
 
 namespace Larp
 {
     static class Program
     {
+        private static Mutex mutex = null;
+
         [STAThread]
         static void Main()
         {
+            const string appName = "LARPDNSSwitcherMutex";
+            bool createdNew;
+
+            mutex = new Mutex(true, appName, out createdNew);
+
+            if (!createdNew)
+            {
+                return;
+            }
+
             try 
             {
                 Application.EnableVisualStyles();
@@ -23,7 +36,14 @@ namespace Larp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Crash Details:\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Crash Details:\n\n" + ex.Message, "LARP Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (createdNew)
+                {
+                    mutex.ReleaseMutex();
+                }
             }
         }
     }
